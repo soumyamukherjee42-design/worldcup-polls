@@ -29,18 +29,18 @@ VOTES_FILE = DATA_DIR / "votes.csv"
 DATA_DIR.mkdir(exist_ok=True)
 
 if not VOTES_FILE.exists():
-pd.DataFrame(
-columns=[
-    "vote_id",
-    "match_number",
-    "username",
-    "prediction",
-    "timestamp"
-]
-).to_csv(
-VOTES_FILE,
-index=False
-)
+    pd.DataFrame(
+    columns=[
+        "vote_id",
+        "match_number",
+        "username",
+        "prediction",
+        "timestamp"
+    ]
+    ).to_csv(
+    VOTES_FILE,
+    index=False
+    )
 
 # ----------------------------------
 

@@ -28,12 +28,21 @@ if not os.path.exists(VOTES_FILE):
 @st.cache_data(ttl=60)
 def load_schedule():
     try:
+        # Load the CSV. If using GitHub, use the RAW URL here.
         df = pd.read_csv(FIXTURE_FILE)
-        # Parse the DD-MM-YYYY format from the date_dt column
+        
+        # Strip whitespace from column names to prevent key errors
+        df.columns = df.columns.str.strip()
+        
+        # Explicitly parse the DD-MM-YYYY format from your date_dt column
         df['date_dt'] = pd.to_datetime(df['date_dt'], format='%d-%m-%Y', errors='coerce').dt.date
+        
+        # Drop rows where dates failed to parse (just in case there are empty rows at the bottom)
+        df = df.dropna(subset=['date_dt'])
+        
         return df
-    except FileNotFoundError:
-        st.error(f"⚠️ `{FIXTURE_FILE}` not found. Please upload the fixtures dataset.")
+    except Exception as e:
+        st.error(f"⚠️ Failed to load fixtures: {e}")
         st.stop()
 
 def load_votes():

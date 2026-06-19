@@ -439,23 +439,23 @@ else:
         col1, col2, col3, col4, col5 = st.columns(5)
         
         with col1:
-            users = tournament_stats.get('Total Users', '0')
+            users = int(float(tournament_stats.get('Total Users', 0)))
             st.metric("👥 Users", users)
             
         with col2:
-            matches = tournament_stats.get('Total Matches', '0')
+            matches = int(float(tournament_stats.get('Total Matches', 0)))
             st.metric("🎯 Matches", matches)
             
         with col3:
-            scheduled = tournament_stats.get('Scheduled Matches', '0')
+            scheduled = int(float(tournament_stats.get('Scheduled Matches', 0)))
             st.metric("🔜 Upcoming", scheduled)
             
         with col4:
-            completed = tournament_stats.get('Completed Matches', '0')
+            completed = int(float(tournament_stats.get('Completed Matches', 0)))
             st.metric("✅ Completed", completed)
             
         with col5:
-            predictions = tournament_stats.get('Total Predictions', '0')
+            predictions = int(float(tournament_stats.get('Total Predictions', 0)))
             st.metric("⭐ Predictions", predictions)
             
         st.markdown("---")

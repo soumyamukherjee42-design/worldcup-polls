@@ -169,7 +169,7 @@ st.markdown("""
 
     /* Metric Fixes */
     [data-testid="stMetric"] {
-        background-color: #ffffff;
+        background-color: #e2e8f0;
         padding: 1.2rem;
         border-radius: 0.8rem;
         border: 2px solid #ffb81c;
@@ -191,7 +191,7 @@ st.markdown("""
 
     /* Match and Dashboard Cards */
     .match-card {
-        background: linear-gradient(to right, #ffffff 0%, #fafafa 100%);
+        background: linear-gradient(to right, #e2e8f0 0%, #edf2f7 100%);
         padding: 1.5rem;
         border-radius: 0.8rem;
         margin-bottom: 1rem;
@@ -208,7 +208,7 @@ st.markdown("""
     }
     
     .prediction-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+        background: linear-gradient(135deg, #e2e8f0 0%, #edf2f7 100%);
         padding: 1.2rem;
         border-radius: 0.8rem;
         margin-bottom: 1rem;
@@ -379,7 +379,7 @@ if st.session_state.user_id is None:
     with col2:
         st.subheader("📅 Tournament Info")
         st.markdown("""
-        <div style="background: white; padding: 1.5rem; border-radius: 0.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 4px solid #e53238;">
+        <div style="background: #e2e8f0; padding: 1.5rem; border-radius: 0.8rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 4px solid #e53238;">
             <ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 1.1rem; line-height: 1.8;">
                 <li>🌍 <strong>Event:</strong> FIFA World Cup 2026</li>
                 <li>🏟️ <strong>Hosts:</strong> 🇺🇸 USA, 🇨🇦 Canada, 🇲🇽 Mexico</li>

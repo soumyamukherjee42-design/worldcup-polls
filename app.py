@@ -1,6 +1,5 @@
 """
 FIFA World Cup 2026 Prediction Platform - Main Application
-Enhanced Design Version
 """
 import os
 import logging

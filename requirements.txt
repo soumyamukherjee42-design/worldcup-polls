@@ -1,5 +1,6 @@
 streamlit>=1.58.0
 pandas>=2.3.0
+psycopg2-binary
 python-dateutil==2.9.0
 pytz==2025.2
 requests==2.32.0

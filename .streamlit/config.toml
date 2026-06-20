@@ -1,8 +1,5 @@
 [theme]
 primaryColor = "#e53238"          # FIFA Red
-backgroundColor = "#f5f5f5"       # Light gray background
-secondaryBackgroundColor = "#ffffff" # White cards/sidebar
-textColor = "#1a472a"             # Deep green text
 font = "sans serif"
 
 [client]

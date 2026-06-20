@@ -49,7 +49,7 @@ with tab1:
     tables = ["users", "matches", "predictions", "match_results"]
     cols = st.columns(len(tables))
     for i, table in enumerate(tables):
-        count = storage.db.count(table)
+        count = storage.count_table(table)
         cols[i].metric(table.capitalize(), count)
     
     st.markdown("---")

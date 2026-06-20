@@ -16,7 +16,7 @@ st.set_page_config(page_title="Admin - World Cup 2026", layout="wide")
 st.markdown("""
 <h1 style="text-align: center;">⚙️ ADMIN CONSOLE</h1>
 <p style="text-align: center; color: #e53238; font-size: 1rem;">
-    Manage tournament data in Supabase
+    Manage tournament data here
 </p>
 """, unsafe_allow_html=True)
 

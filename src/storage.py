@@ -168,6 +168,11 @@ class Storage:
         df = pd.read_csv(self.config.MATCH_MASTER_PATH)
         df.loc[df['match_id'] == match_id, 'status'] = status
         df.to_csv(self.config.MATCH_MASTER_PATH, index=False)
+
+    # Add this inside your Storage class in src/storage.py
+    def count_table(self, table_name: str) -> int:
+        """Helper to count rows in a table"""
+        return self.db.count(table_name)
     
     # ============ Prediction Management ============
     

@@ -91,11 +91,15 @@ with tab2:
         st.info("No scheduled matches available.")
 
 # ========== TAB 3: Maintenance ==========
+# ========== TAB 3: Maintenance ==========
 with tab3:
     st.markdown("## 🔧 Maintenance")
+    
+    # Corrected indentation for these lines:
     if st.button("🔄 Sync Results from API"):
-    storage.sync_results_from_api("WC") # "WC" is the league code for World Cup
-    st.success("Synced!")
+        storage.sync_results_from_api("WC") # "WC" is the league code for World Cup
+        st.success("Synced!")
+        
     if st.button("🔴 RESET ALL TABLES (DANGER)", use_container_width=True):
         if st.checkbox("I am absolutely sure"):
             try:
@@ -105,5 +109,7 @@ with tab3:
                 storage.db.execute("DELETE FROM user_stats")
                 storage.db.execute("UPDATE matches SET status = 'scheduled'")
                 st.success("✅ All data wiped except matches.")
+            except Exception as e:
+                st.error(f"Error: {e}")
             except Exception as e:
                 st.error(f"Error: {e}")

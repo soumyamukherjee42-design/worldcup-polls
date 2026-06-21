@@ -36,6 +36,10 @@ if st.session_state.user_id is None:
 try:
     matches_df = storage.get_all_matches()
     matches_df['match_date'] = pd.to_datetime(matches_df['match_date']).dt.date
+    if matches_df:
+        matches_df = pd.DataFrame(matches_df)
+    else:
+        matches_df = pd.DataFrame()
     
     if matches_df.empty:
         st.warning("No matches available in the database.")

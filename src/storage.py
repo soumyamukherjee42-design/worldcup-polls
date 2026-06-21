@@ -142,6 +142,20 @@ class Storage:
             'total_points': total_points
         }
 
+    def get_prediction(self, match_id: str, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get a specific prediction for a user and match."""
+        return self.db.fetch_one(
+            "SELECT * FROM predictions WHERE match_id = %s AND user_id = %s",
+            (match_id, user_id)
+        )
+
+    def get_user_predictions(self, user_id: str) -> List[Dict[str, Any]]:
+        """Get all predictions for a specific user."""
+        return self.db.fetch_all(
+            "SELECT * FROM predictions WHERE user_id = %s ORDER BY timestamp DESC",
+            (user_id,)
+        )
+
     # ============ RESULTS & ADMIN API ============
     def save_match_result(self, match_id: str, actual_winner: str) -> bool:
         res_data = {

@@ -93,6 +93,9 @@ with tab2:
 # ========== TAB 3: Maintenance ==========
 with tab3:
     st.markdown("## 🔧 Maintenance")
+    if st.button("🔄 Sync Results from API"):
+    storage.sync_results_from_api("WC") # "WC" is the league code for World Cup
+    st.success("Synced!")
     if st.button("🔴 RESET ALL TABLES (DANGER)", use_container_width=True):
         if st.checkbox("I am absolutely sure"):
             try:

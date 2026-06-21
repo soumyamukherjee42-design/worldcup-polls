@@ -37,10 +37,35 @@ class Storage:
         schema.init_database()
         logger.info("Data layer initialized successfully")
 
+    # ... inside your Storage class ...
+
     def sync_results_from_api(self, competition_code: str):
+        """Fetches results from football-data.org and updates the database."""
         from src.api import FootballAPI
         api = FootballAPI()
         matches = api.fetch_finished_matches(competition_code)
+        
+        for match in matches:
+            # Match IDs from API are usually integers; convert to string for your DB
+            match_id = str(match['id'])
+            
+            # Determine winner
+            score_info = match.get('score', {})
+            winner = score_info.get('winner') # 'HOME_TEAM', 'AWAY_TEAM', 'DRAW'
+            
+            if winner == 'HOME_TEAM':
+                winner_name = match['homeTeam']['name']
+            elif winner == 'AWAY_TEAM':
+                winner_name = match['awayTeam']['name']
+            else:
+                winner_name = 'draw'
+                
+            # Update the database
+            # Ensure these methods exist in your Storage class
+            self.save_match_result(match_id, winner_name)
+            self.update_match_status(match_id, 'completed')
+        
+        logger.info(f"Synced {len(matches)} results from API")
         
         for match in matches:
             match_id = str(match['id'])

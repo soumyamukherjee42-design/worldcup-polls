@@ -70,51 +70,6 @@ except Exception as e:
     st.info("⏰ **All times displayed in IST (Indian Standard Time)**")
 
 
-def convert_et_to_ist_display(et_date_str: str, et_time_str: str) -> str:
-    """
-    Convert ET date/time to IST display string.
-    
-    Args:
-        et_date_str: Date string in YYYY-MM-DD format (ET)
-        et_time_str: Time string in HH:MM format (ET)
-    
-    Returns:
-        Formatted IST time string
-    """
-    try:
-        # Parse ET datetime
-        et_datetime = datetime.strptime(f"{et_date_str} {et_time_str}", "%Y-%m-%d %H:%M")
-        
-        # Convert to IST
-        ist_datetime = TimezoneConverter.et_to_ist(et_datetime)
-        
-        # Return formatted string
-        return ist_datetime.strftime("%I:%M %p")
-    except Exception as e:
-        logger.warning(f"Error converting time: {e}. Using ET time.")
-        return et_time_str
-
-
-def get_ist_date_from_et(et_date_str: str, et_time_str: str) -> str:
-    """
-    Get IST date from ET date and time (handles date changes when converting timezones).
-    
-    Args:
-        et_date_str: Date string in YYYY-MM-DD format (ET)
-        et_time_str: Time string in HH:MM format (ET)
-    
-    Returns:
-        IST date in YYYY-MM-DD format
-    """
-    try:
-        et_datetime = datetime.strptime(f"{et_date_str} {et_time_str}", "%Y-%m-%d %H:%M")
-        ist_datetime = TimezoneConverter.et_to_ist(et_datetime)
-        return ist_datetime.strftime("%Y-%m-%d")
-    except Exception as e:
-        logger.warning(f"Error converting date: {e}. Using ET date.")
-        return et_date_str
-
-
 try:
     if USE_NEW_ARCH:
         # ============ NEW ARCHITECTURE ============
@@ -411,21 +366,12 @@ try:
                 st.error(f"❌ Missing columns in database: {', '.join(missing_cols)}")
                 st.stop()
             
-            # Convert to datetime properly
-            matches_df['match_date'] = pd.to_datetime(matches_df['match_date']).dt.date
+            # Safely handle dates to avoid warnings
+            matches_df['match_date'] = pd.to_datetime(matches_df['match_date'], errors='coerce').dt.date
             
-            # Add IST time conversion
-            matches_df['match_datetime_str'] = (
-                matches_df['match_date'].astype(str) + ' ' + matches_df['kickoff_time'].astype(str)
-            )
-            
-            matches_df['kickoff_time_ist'] = matches_df.apply(
-                lambda row: convert_et_to_ist_display(
-                    str(row['match_date']),
-                    str(row['kickoff_time'])
-                ),
-                axis=1
-            )
+            # Ensure kickoff_time_ist exists, fallback to standard kickoff_time
+            if 'kickoff_time_ist' not in matches_df.columns:
+                matches_df['kickoff_time_ist'] = matches_df['kickoff_time']
             
             # Filter for active (scheduled) matches
             active_matches = matches_df[
@@ -437,7 +383,11 @@ try:
                 st.stop()
             
             # Get match dates
-            match_dates = sorted(active_matches['match_date'].unique())
+            match_dates = sorted(active_matches['match_date'].dropna().unique())
+            
+            if not match_dates:
+                st.info("⏰ No upcoming matches with valid dates.")
+                st.stop()
             
             # Default to today or nearest future date
             today = date.today()
@@ -555,7 +505,7 @@ try:
                             <p style="color: #666; margin: 0; font-size: 0.85rem;">
                                 📅 {match['match_date']}<br>
                                 🕐 {match['kickoff_time_ist']} IST<br>
-                                📍 {match['venue'][:30]}...<br>
+                                📍 {str(match['venue'])[:30]}...<br>
                                 <span style="background: #e53238; color: white; padding: 0.2rem 0.5rem; border-radius: 0.3rem; font-size: 0.75rem; font-weight: 600;">{match['stage']}</span>
                             </p>
                         </div>

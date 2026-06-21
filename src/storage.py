@@ -20,6 +20,140 @@ def get_storage() -> "Storage":
     return storage
 
 
+def get_match(self, match_id: str):
+    """
+    Get a match by ID.
+    
+    Args:
+        match_id: Match ID
+    
+    Returns:
+        Match dictionary or None
+    """
+    try:
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "SELECT * FROM matches WHERE match_id = ?",
+            (match_id,)
+        )
+        row = cursor.fetchone()
+        
+        if row:
+            return {
+                'match_id': row[0],
+                'team_1': row[1],
+                'team_2': row[2],
+                'stage': row[3],
+                'match_date': row[4],
+                'kickoff_time': row[5],
+                'venue': row[6],
+                'status': row[7]
+            }
+        return None
+    except Exception as e:
+        logger.error(f"Error getting match: {e}")
+        return None
+
+
+def get_match_result(self, match_id: str):
+    """
+    Get match result.
+    
+    Args:
+        match_id: Match ID
+    
+    Returns:
+        Result dictionary or None
+    """
+    try:
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "SELECT * FROM match_results WHERE match_id = ?",
+            (match_id,)
+        )
+        row = cursor.fetchone()
+        
+        if row:
+            return {
+                'match_id': row[0],
+                'actual_winner': row[1],
+                'timestamp': row[2]
+            }
+        return None
+    except Exception as e:
+        logger.error(f"Error getting match result: {e}")
+        return None
+
+
+def get_match_predictions(self, match_id: str):
+    """
+    Get all predictions for a match.
+    
+    Args:
+        match_id: Match ID
+    
+    Returns:
+        List of predictions
+    """
+    try:
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "SELECT * FROM predictions WHERE match_id = ?",
+            (match_id,)
+        )
+        rows = cursor.fetchall()
+        
+        predictions = []
+        for row in rows:
+            predictions.append({
+                'prediction_id': row[0],
+                'user_id': row[1],
+                'match_id': row[2],
+                'predicted_winner': row[3],
+                'timestamp': row[4]
+            })
+        
+        return predictions
+    except Exception as e:
+        logger.error(f"Error getting match predictions: {e}")
+        return []
+
+
+def create_prediction(self, prediction_id: str, user_id: str, match_id: str,
+                     predicted_winner: str, timestamp: str = None) -> bool:
+    """
+    Create a new prediction.
+    
+    Args:
+        prediction_id: Unique prediction ID
+        user_id: User ID
+        match_id: Match ID
+        predicted_winner: Predicted winner
+        timestamp: Prediction timestamp
+    
+    Returns:
+        Success status
+    """
+    try:
+        if timestamp is None:
+            from datetime import datetime, timezone
+            timestamp = datetime.now(timezone.utc).isoformat()
+        
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "INSERT INTO predictions (prediction_id, user_id, match_id, predicted_winner, timestamp) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (prediction_id, user_id, match_id, predicted_winner, timestamp)
+        )
+        self.conn.commit()
+        
+        logger.info(f"Prediction created: {prediction_id}")
+        return True
+    except Exception as e:
+        logger.error(f"Error creating prediction: {e}")
+        return False
+
+
 class Storage:
     def __init__(self, config: Config):
         self.config = config

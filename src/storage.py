@@ -185,3 +185,101 @@ class Storage:
             logger.info(f"Synced {count} new results from API")
         except ImportError:
             logger.error("Could not import API module")
+
+
+    # ============ LEADERBOARD & ADMIN METHODS ============
+    def get_leaderboard(self, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Dynamically calculates leaderboard rankings and points."""
+        query = """
+        SELECT 
+            u.user_id,
+            u.user_name,
+            COUNT(p.prediction_id) as total_predictions,
+            COALESCE(SUM(CASE WHEN p.predicted_winner = r.actual_winner THEN 1 ELSE 0 END), 0) as correct_predictions,
+            COALESCE(SUM(
+                CASE 
+                    WHEN p.predicted_winner = r.actual_winner AND r.actual_winner != 'draw' THEN 3
+                    WHEN p.predicted_winner = r.actual_winner AND r.actual_winner = 'draw' THEN 2
+                    ELSE 0
+                END
+            ), 0) as total_points,
+            RANK() OVER (
+                ORDER BY COALESCE(SUM(
+                    CASE 
+                        WHEN p.predicted_winner = r.actual_winner AND r.actual_winner != 'draw' THEN 3
+                        WHEN p.predicted_winner = r.actual_winner AND r.actual_winner = 'draw' THEN 2
+                        ELSE 0
+                    END
+                ), 0) DESC
+            ) as rank
+        FROM users u
+        LEFT JOIN predictions p ON u.user_id = p.user_id
+        LEFT JOIN match_results r ON p.match_id = r.match_id
+        GROUP BY u.user_id, u.user_name
+        ORDER BY total_points DESC, correct_predictions DESC
+        """
+        if limit:
+            query += f" LIMIT {limit}"
+            
+        results = self.db.fetch_all(query)
+        
+        # Calculate accuracy safely in Python
+        for row in results:
+            total = row['total_predictions']
+            correct = row['correct_predictions']
+            row['accuracy_percentage'] = round((correct / total * 100), 2) if total > 0 else 0.0
+            
+        return results
+
+    def get_user_rank(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Gets the specific rank for a single user using a Common Table Expression (CTE)."""
+        query = """
+        WITH RankedUsers AS (
+            SELECT 
+                u.user_id,
+                u.user_name,
+                COUNT(p.prediction_id) as total_predictions,
+                COALESCE(SUM(CASE WHEN p.predicted_winner = r.actual_winner THEN 1 ELSE 0 END), 0) as correct_predictions,
+                COALESCE(SUM(
+                    CASE 
+                        WHEN p.predicted_winner = r.actual_winner AND r.actual_winner != 'draw' THEN 3
+                        WHEN p.predicted_winner = r.actual_winner AND r.actual_winner = 'draw' THEN 2
+                        ELSE 0
+                    END
+                ), 0) as total_points,
+                RANK() OVER (
+                    ORDER BY COALESCE(SUM(
+                        CASE 
+                            WHEN p.predicted_winner = r.actual_winner AND r.actual_winner != 'draw' THEN 3
+                            WHEN p.predicted_winner = r.actual_winner AND r.actual_winner = 'draw' THEN 2
+                            ELSE 0
+                        END
+                    ), 0) DESC
+                ) as rank
+            FROM users u
+            LEFT JOIN predictions p ON u.user_id = p.user_id
+            LEFT JOIN match_results r ON p.match_id = r.match_id
+            GROUP BY u.user_id, u.user_name
+        )
+        SELECT * FROM RankedUsers WHERE user_id = %s
+        """
+        result = self.db.fetch_one(query, (user_id,))
+        if result:
+            total = result['total_predictions']
+            correct = result['correct_predictions']
+            result['accuracy_percentage'] = round((correct / total * 100), 2) if total > 0 else 0.0
+        return result
+
+    def get_tournament_stats(self) -> Dict[str, Any]:
+        """Provides high-level stats for the Admin dashboard."""
+        return {
+            "Total Users": self.db.count("users"),
+            "Total Matches": self.db.count("matches"),
+            "Total Predictions": self.db.count("predictions"),
+            "Scheduled Matches": self.db.count("matches", "status = %s", ("scheduled",)),
+            "Completed Matches": self.db.count("matches", "status = %s", ("completed",)),
+        }
+
+    def get_database_size(self) -> Dict[str, int]:
+        """Provides row counts for the Admin dashboard."""
+        return {table: self.db.count(table) for table in ["users", "matches", "predictions", "match_results"]}

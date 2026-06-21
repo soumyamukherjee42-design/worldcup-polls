@@ -69,6 +69,56 @@ class Storage:
         except Exception as e:
             logger.error(f"Error getting prediction count: {e}")
             return 0
+
+    # ============ DEBUG/UTILITY METHODS ============
+    
+    def clear_all_data(self) -> bool:
+        """
+        Clear all data from database (for testing).
+        WARNING: This deletes all data!
+        
+        Returns:
+            Success status
+        """
+        try:
+            cursor = self.conn.cursor()
+            
+            # Drop and recreate all tables
+            cursor.execute("DROP TABLE IF EXISTS leaderboard")
+            cursor.execute("DROP TABLE IF EXISTS user_stats")
+            cursor.execute("DROP TABLE IF EXISTS match_results")
+            cursor.execute("DROP TABLE IF EXISTS predictions")
+            cursor.execute("DROP TABLE IF EXISTS matches")
+            cursor.execute("DROP TABLE IF EXISTS users")
+            
+            self.conn.commit()
+            
+            # Recreate tables
+            self._create_tables()
+            
+            logger.warning("All data cleared from database")
+            return True
+        except Exception as e:
+            logger.error(f"Error clearing data: {e}")
+            return False
+    
+    def get_database_stats(self) -> Dict:
+        """
+        Get database statistics.
+        
+        Returns:
+            Dictionary with stats
+        """
+        try:
+            return {
+                'users': self.conn.execute("SELECT COUNT(*) FROM users").fetchone()[0],
+                'matches': self.conn.execute("SELECT COUNT(*) FROM matches").fetchone()[0],
+                'predictions': self.conn.execute("SELECT COUNT(*) FROM predictions").fetchone()[0],
+                'results': self.conn.execute("SELECT COUNT(*) FROM match_results").fetchone()[0],
+            }
+        except Exception as e:
+            logger.error(f"Error getting database stats: {e}")
+            return {}
     
     def get_user_correct_prediction_count(self, user_id: str) -> int:
         """

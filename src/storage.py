@@ -157,6 +157,10 @@ class Storage:
             'total_points': total_points
         }
 
+    def count_table(self, table: str) -> int:
+        """Helper method to count rows in any table."""
+        return self.db.count(table)
+
     # ============ RESULTS & API SYNC ============
     def save_result(self, match_id: str, actual_winner: str) -> bool:
         """Safely saves results using the correct match_result_id column."""

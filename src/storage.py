@@ -238,22 +238,21 @@ class Storage:
             api = FootballAPI()
             api_matches = api.fetch_finished_matches(competition_code)
             updated = 0
+            
             for m in api_matches:
                 home = m.get('homeTeam', {}).get('name', '')
                 away = m.get('awayTeam', {}).get('name', '')
-                score = m.get('score', {}).get('fullTime', {})
-                home_score = score.get('home')
-                away_score = score.get('away')
-                if home_score is None or away_score is None or not home or not away:
+                
+                # Use the API's built-in winner key which accounts for penalties/extra time
+                # It returns 'HOME_TEAM', 'AWAY_TEAM', or 'DRAW'
+                api_winner = m.get('score', {}).get('winner')
+                
+                if not api_winner or not home or not away:
                     continue
-                if home_score > away_score:
-                    winner = home
-                elif away_score > home_score:
-                    winner = away
-                else:
-                    winner = 'draw'
+                    
+                # Fetch the match ID AND the exact database team names
                 db_match = self.db.fetch_one(
-                    """SELECT match_id FROM matches WHERE status = 'scheduled'
+                    """SELECT match_id, team_1, team_2 FROM matches WHERE status = 'scheduled'
                        AND (
                            (LOWER(team_1) LIKE %s AND LOWER(team_2) LIKE %s)
                            OR (LOWER(team_1) LIKE %s AND LOWER(team_2) LIKE %s)
@@ -261,10 +260,26 @@ class Storage:
                     (f"%{home[:5].lower()}%", f"%{away[:5].lower()}%",
                      f"%{away[:5].lower()}%", f"%{home[:5].lower()}%")
                 )
+                
                 if db_match:
-                    self.save_result(db_match['match_id'], winner)
+                    db_team1 = db_match['team_1']
+                    db_team2 = db_match['team_2']
+                    
+                    # Figure out which DB team matches the API's winning team
+                    if api_winner == 'DRAW':
+                        actual_winner = 'draw'
+                    elif api_winner == 'HOME_TEAM':
+                        # If DB's team_1 starts with the home team's first 4 letters, it's team_1. Else team_2.
+                        actual_winner = db_team1 if db_team1.lower().startswith(home[:4].lower()) else db_team2
+                    elif api_winner == 'AWAY_TEAM':
+                        # If DB's team_1 starts with the away team's first 4 letters, it's team_1. Else team_2.
+                        actual_winner = db_team1 if db_team1.lower().startswith(away[:4].lower()) else db_team2
+                    
+                    self.save_result(db_match['match_id'], actual_winner)
                     updated += 1
+                    
             return updated
+            
         except Exception as e:
             logger.error(f"API sync error: {e}")
             raise

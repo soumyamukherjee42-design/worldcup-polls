@@ -9,6 +9,19 @@ import pandas as pd
 from datetime import datetime, timezone, timedelta
 import logging
 
+# ==========================================
+# SESSION STATE INITIALIZATION
+# ==========================================
+if 'user_id' not in st.session_state:
+    st.session_state.user_id = None
+    
+if 'user_name' not in st.session_state:
+    st.session_state.user_name = None
+
+if 'ab_group' not in st.session_state:
+    st.session_state.ab_group = 'control'
+# ==========================================
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 

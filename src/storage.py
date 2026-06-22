@@ -301,8 +301,9 @@ class Storage:
             row['accuracy_percentage'] = round((correct / total * 100), 2) if total > 0 else 0.0
         return results
 
+
     def get_user_rank(self, user_id: str) -> Optional[Dict[str, Any]]:
-        """Gets the specific rank and stats for a single user using a Common Table Expression (CTE)."""
+        """Gets the specific rank and stats for a single user."""
         try:
             query = """
             WITH RankedUsers AS (
@@ -344,6 +345,11 @@ class Storage:
             logger.error(f"Error getting user rank: {e}")
             return None
 
+
+
+
+
+    
     def get_tournament_stats(self) -> Dict[str, Any]:
         return {
             "Total Users": self.db.count("users"),

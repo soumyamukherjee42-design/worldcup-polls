@@ -269,7 +269,11 @@ else:
         if matches_df.empty:
             st.info("No matches scheduled yet")
         else:
-            active_matches = matches_df[matches_df['status'].isin(['scheduled', 'live'])].copy()
+            today_str = date.today().isoformat()
+            active_matches = matches_df[
+                matches_df['status'].isin(['scheduled', 'live']) &
+                (matches_df['match_date'] >= today_str)
+            ].copy()
             if active_matches.empty:
                 st.info("No upcoming matches")
             else:
@@ -277,7 +281,6 @@ else:
                 active_matches = active_matches.sort_values(['match_date', 'kickoff_time'])
                 match_dates = sorted(active_matches['match_date'].unique())
 
-                today_str = date.today().isoformat()
                 default_date = next((d for d in match_dates if d >= today_str), match_dates[0])
 
                 if 'home_match_date' not in st.session_state or st.session_state.home_match_date not in match_dates:

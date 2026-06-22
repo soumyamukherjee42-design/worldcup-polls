@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @st.cache_resource
-def get_storage(_version: int = 3) -> "Storage":
+def get_storage(_version: int = 4) -> "Storage":
     """Single cached Storage instance shared across all pages and reruns.
     Bump _version to invalidate the Streamlit cache after code changes.
     """
@@ -224,8 +224,12 @@ class Storage:
         return {
             'Total Users':       self.count_table('users'),
             'Total Matches':     self.count_table('matches'),
-            'Scheduled Matches': int((self.db.fetch_one("SELECT COUNT(*) AS cnt FROM matches WHERE status = 'scheduled'") or {}).get('cnt', 0)),
-            'Completed Matches': int((self.db.fetch_one("SELECT COUNT(*) AS cnt FROM matches WHERE status = 'completed'") or {}).get('cnt', 0)),
+            'Scheduled Matches': int((self.db.fetch_one(
+                "SELECT COUNT(*) AS cnt FROM matches WHERE status = 'scheduled' AND match_date >= CURRENT_DATE::text"
+            ) or {}).get('cnt', 0)),
+            'Completed Matches': int((self.db.fetch_one(
+                "SELECT COUNT(*) AS cnt FROM matches WHERE status = 'completed'"
+            ) or {}).get('cnt', 0)),
             'Total Predictions': self.count_table('predictions'),
         }
 

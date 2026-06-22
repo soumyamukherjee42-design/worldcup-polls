@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @st.cache_resource
-def get_storage(_version: int = 4) -> "Storage":
+def get_storage(_version: int = 5) -> "Storage":
     """Single cached Storage instance shared across all pages and reruns.
     Bump _version to invalidate the Streamlit cache after code changes.
     """
@@ -75,14 +75,10 @@ class Storage:
             SELECT *,
                 to_char(
                     (match_date::date + kickoff_time::time) + interval '9 hours 30 minutes',
-                    'HH12:MI AM'
-                ) AS kickoff_ist,
-                to_char(
-                    (match_date::date + kickoff_time::time) + interval '9 hours 30 minutes',
                     'YYYY-MM-DD'
                 ) AS match_date_ist
             FROM matches
-            ORDER BY match_date, kickoff_time
+            ORDER BY match_date_ist, kickoff_time_ist
         """)
 
     def get_match(self, match_id: str) -> Optional[Dict]:

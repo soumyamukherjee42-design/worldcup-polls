@@ -277,28 +277,7 @@ class Storage:
                     print("  -> ❌ NOT FOUND IN DB: Either the names don't match, or status is not 'scheduled'.")
                     
             print(f"--- SYNC COMPLETE: Updated {updated} matches ---\n")
-            return updated
-
-        # Inside src/storage.py -> sync_results_from_api
-    
-        if self.save_result(db_match['match_id'], actual_winner):
-            logger.info(f"  -> 💾 SAVED TO NEON: Winner is {actual_winner}")
-            updated += 1
-            
-        # --- ADD THIS AT THE END OF THE LOOP ---
-        if updated > 0:
-            try:
-                from src.email_service import EmailService
-                email_svc = EmailService()
-                all_users = self.db.fetch_all("SELECT email FROM users")
-                email_svc.send_leaderboard_update(all_users)
-                logger.info("Sent leaderboard update emails.")
-            except Exception as e:
-                logger.error(f"Could not send update emails: {e}")
-                
-        logger.info(f"--- SYNC COMPLETE: Updated {updated} matches ---")
-        return updated
-            
+            return updated            
         except Exception as e:
             print(f"🚨 CRITICAL ERROR IN SYNC: {e}")
             logger.error(f"API sync error: {e}")

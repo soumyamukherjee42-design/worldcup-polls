@@ -268,7 +268,7 @@ class Storage:
                            OR (LOWER(team_1) LIKE %s AND LOWER(team_2) LIKE %s)
                        )""",
                     (search_home, search_away, search_away, search_home)
-                )
+                )        
                 
                 if db_match:
                     print(f"  -> ✅ MATCH FOUND IN DB: {db_match['team_1']} vs {db_match['team_2']}")
@@ -291,12 +291,14 @@ class Storage:
                     print("  -> ❌ NOT FOUND IN DB: Either the names don't match, or status is not 'scheduled'.")
                     
             print(f"--- SYNC COMPLETE: Updated {updated} matches ---\n")
-            return updated
-            
+            return updated            
         except Exception as e:
             print(f"🚨 CRITICAL ERROR IN SYNC: {e}")
             logger.error(f"API sync error: {e}")
             return 0
+
+    
+
 
     
     # ============ LEADERBOARD & ADMIN ============
